@@ -19,7 +19,7 @@ public class ServoTest extends LinearOpMode {
         // Initialize the servos
         iServoLeft = hardwareMap.get(Servo.class, "iServoLeft");
         iServoRight = hardwareMap.get(Servo.class, "iServoRight");
-        iCRServoLeft = hardwareMap.get(Servo.class "iCRServoLeft");
+        iCRServoLeft = hardwareMap.get(CRServo.class, "iCRServoLeft");
 
         // Wait for the start button to be pressed
         waitForStart();
