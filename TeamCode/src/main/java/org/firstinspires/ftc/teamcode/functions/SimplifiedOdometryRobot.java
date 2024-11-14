@@ -1,4 +1,4 @@
- package org.firstinspires.ftc.teamcode.subsystems;
+ package org.firstinspires.ftc.teamcode.functions;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -11,9 +11,6 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 
@@ -23,7 +20,7 @@ import java.util.List;
 public class SimplifiedOdometryRobot {
     // Adjust these numbers to suit your robot.
     private final double ODOM_INCHES_PER_COUNT   = 0.00076416015;//  Odometry Pod (1/226.8)
-    private final boolean INVERT_DRIVE_ODOMETRY  = true;        //  When driving FORWARD, the odometry value MUST increase.  If it does not, flip the value of this constant.
+    private final boolean INVERT_DRIVE_ODOMETRY  = false;        //  When driving FORWARD, the odometry value MUST increase.  If it does not, flip the value of this constant.
     private final boolean INVERT_STRAFE_ODOMETRY = false;       //  When strafing to the LEFT, the odometry value MUST increase.  If it does not, flip the value of this constant.
 
     private static final double DRIVE_GAIN          = 0.15;    // Strength of axial position control
@@ -53,6 +50,7 @@ public class SimplifiedOdometryRobot {
     public ProportionalControl driveController     = new ProportionalControl(DRIVE_GAIN, DRIVE_ACCEL, DRIVE_MAX_AUTO, DRIVE_TOLERANCE, DRIVE_DEADBAND, false);
     public ProportionalControl strafeController    = new ProportionalControl(STRAFE_GAIN, STRAFE_ACCEL, STRAFE_MAX_AUTO, STRAFE_TOLERANCE, STRAFE_DEADBAND, false);
     public ProportionalControl yawController       = new ProportionalControl(YAW_GAIN, YAW_ACCEL, YAW_MAX_AUTO, YAW_TOLERANCE,YAW_DEADBAND, true);
+    public ProportionalControl linearSlideController = new ProportionalControl(0.1, 50, 0.5, 1.0, 0.2, false);
 
     // ---  Private Members
 
@@ -61,6 +59,9 @@ public class SimplifiedOdometryRobot {
     private DcMotor rightFrontDrive;    //  control the right front drive wheel
     private DcMotor leftBackDrive;      //  control the left back drive wheel
     private DcMotor rightBackDrive;     //  control the right back drive wheel
+
+    private DcMotor leftLinearSlide;     // control the left linear slide
+    private DcMotor rightLinearSlide;    // control right linear slide
 
     private DcMotor driveEncoder;       //  the Axial (front/back) Odometry Module (may overlap with motor, or may not)
     private DcMotor strafeEncoder;      //  the Lateral (left/right) Odometry Module (may overlap with motor, or may not)
@@ -101,6 +102,30 @@ public class SimplifiedOdometryRobot {
         leftBackDrive  = setupDriveMotor( "Left Back", DcMotor.Direction.FORWARD);
         rightBackDrive = setupDriveMotor( "Right Back",DcMotor.Direction.REVERSE);
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
+
+
+        //setup linear slide motors
+
+        leftLinearSlide = myOpMode.hardwareMap.get(DcMotor.class, "leftLinearSlide");
+        rightLinearSlide = myOpMode.hardwareMap.get(DcMotor.class, "rightLinearSlide");
+
+        leftLinearSlide.setDirection(DcMotor.Direction.FORWARD);
+        rightLinearSlide.setDirection(DcMotor.Direction.FORWARD);
+
+        leftLinearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftLinearSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftLinearSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        rightLinearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightLinearSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightLinearSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        /**
+         * Move the linear slides to a desired position
+         * @param distanceInches  Distance to move. +ve = up, -ve = down.
+         * @param power Maximum power to apply. This should always be positive.
+         * @param holdTime Minimum time (sec) required to hold the final position. 0 = no hold.
+         */
 
 
 
@@ -334,6 +359,47 @@ public class SimplifiedOdometryRobot {
         heading = 0;
     }
 
+    public void moveLinearSlides(double distanceInches, double power, double holdTime) {
+        resetOdometry();  // Reset odometry before moving slides
+
+        // Reset linear slide controller
+        linearSlideController.reset(distanceInches, power);
+
+        holdTimer.reset();
+
+        while (myOpMode.opModeIsActive() && readSensors()) {
+            // Get the average height of the two linear slides based on their encoder values
+            double averageHeight = (leftLinearSlide.getCurrentPosition() + rightLinearSlide.getCurrentPosition()) / 2.0;
+
+            // Calculate the required power for the slides to move towards the target position
+            double slidePower = linearSlideController.getOutput(averageHeight);
+
+            // Apply the calculated power to both slides
+            leftLinearSlide.setPower(slidePower);
+            rightLinearSlide.setPower(slidePower);
+
+            // Time to exit?
+            if (linearSlideController.inPosition()) {
+                if (holdTimer.time() > holdTime) {
+                    break;  // Exit loop if in position and hold time has passed
+                }
+            } else {
+                holdTimer.reset();  // Reset timer if position is not yet reached
+            }
+
+            myOpMode.sleep(10);
+        }
+
+        // Stop the linear slides after the move
+        leftLinearSlide.setPower(0);
+        rightLinearSlide.setPower(0);
+    }
+
+
+
+
+
+
     public double getHeading() {return heading;}
     public double getTurnRate() {return turnRate;}
 
@@ -347,111 +413,4 @@ public class SimplifiedOdometryRobot {
 
 //****************************************************************************************************
 //****************************************************************************************************
-
-/***
- * This class is used to implement a proportional controller which can calculate the desired output power
- * to get an axis to the desired setpoint value.
- * It also implements an acceleration limit, and a max power output.
- */
-class ProportionalControl {
-    double  lastOutput;
-    double  gain;
-    double  accelLimit;
-    double  defaultOutputLimit;
-    double  liveOutputLimit;
-    double  setPoint;
-    double  tolerance;
-    double deadband;
-    boolean circular;
-    boolean inPosition;
-    ElapsedTime cycleTime = new ElapsedTime();
-
-    public ProportionalControl(double gain, double accelLimit, double outputLimit, double tolerance, double deadband, boolean circular) {
-        this.gain = gain;
-        this.gain = gain;
-        this.accelLimit = accelLimit;
-        this.defaultOutputLimit = outputLimit;
-        this.liveOutputLimit = outputLimit;
-        this.tolerance = tolerance;
-        this.deadband = deadband;
-        this.circular = circular;
-        reset(0.0);
-    }
-
-    /**
-     * Determines power required to obtain the desired setpoint value based on new input value.
-     * Uses proportional gain, and limits rate of change of output, as well as max output.
-     * @param input  Current live control input value (from sensors)
-     * @return desired output power.
-     */
-    public double getOutput(double input) {
-        double error = setPoint - input;
-        double dV = cycleTime.seconds() * accelLimit;
-        double output;
-
-        // normalize to +/- 180 if we are controlling heading
-        if (circular) {
-            while (error > 180)  error -= 360;
-            while (error <= -180) error += 360;
-        }
-
-        inPosition = (Math.abs(error) < tolerance);
-
-        // Prevent any very slow motor output accumulation
-        if (Math.abs(error) <= deadband) {
-            output = 0;
-        } else {
-            // calculate output power using gain and clip it to the limits
-            output = (error * gain);
-            output = Range.clip(output, -liveOutputLimit, liveOutputLimit);
-
-            // Now limit rate of change of output (acceleration)
-            if ((output - lastOutput) > dV) {
-                output = lastOutput + dV;
-            } else if ((output - lastOutput) < -dV) {
-                output = lastOutput - dV;
-            }
-        }
-
-        lastOutput = output;
-        cycleTime.reset();
-        return output;
-    }
-
-    public boolean inPosition(){
-        return inPosition;
-    }
-    public double getSetpoint() {return setPoint;}
-
-    /**
-     * Saves a new setpoint and resets the output power history.
-     * This call allows a temporary power limit to be set to override the default.
-     * @param setPoint
-     * @param powerLimit
-     */
-    public void reset(double setPoint, double powerLimit) {
-        liveOutputLimit = Math.abs(powerLimit);
-        this.setPoint = setPoint;
-        reset();
-    }
-
-    /**
-     * Saves a new setpoint and resets the output power history.
-     * @param setPoint
-     */
-    public void reset(double setPoint) {
-        liveOutputLimit = defaultOutputLimit;
-        this.setPoint = setPoint;
-        reset();
-    }
-
-    /**
-     * Leave everything else the same, Just restart the acceleration timer and set output to 0
-     */
-    public void reset() {
-        cycleTime.reset();
-        inPosition = false;
-        lastOutput = 0.0;
-    }
-}
 

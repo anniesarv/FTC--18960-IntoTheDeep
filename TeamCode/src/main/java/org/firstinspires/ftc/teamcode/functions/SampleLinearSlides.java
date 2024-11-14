@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+/*package org.firstinspires.ftc.teamcode.functions;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -134,7 +134,7 @@ public class SampleLinearSlides {
 
   /*  if (showTelemetry) {
         myOpMode.telemetry.addData("hey look your slides might be running this is cute", linearSlide1, linearSlide2);
-    } */
+    }
 
 
 }
@@ -145,3 +145,5 @@ public void stopSlides() { moveSlides(0); }
 
 
 }
+
+*/

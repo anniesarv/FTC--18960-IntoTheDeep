@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.sun.tools.javac.tree.DCTree;
 
 
 public class Hardware
@@ -72,16 +73,49 @@ public class Hardware
         oServoRight = hardwareMap.get(CRServo.class, "oServoRight");
         oServoLeft = hardwareMap.get(CRServo.class, "oServoLeft");
 
-        //set up motor directions
 
-                //drivebase
-                LFM.setDirection(DcMotor.Direction.REVERSE);
-                LBM.setDirection(DcMotor.Direction.REVERSE);
-                RFM.setDirection(DcMotor.Direction.REVERSE);
-                RBM.setDirection(DcMotor.Direction.FORWARD);
 
-                //intake
-                iMotor.setDirection(DcMotor.Direction.REVERSE);
+        //drivebase directions
+        LFM.setDirection(DcMotor.Direction.REVERSE);
+        LBM.setDirection(DcMotor.Direction.REVERSE);
+        RFM.setDirection(DcMotor.Direction.REVERSE);
+        RBM.setDirection(DcMotor.Direction.FORWARD);
+
+        //intake
+        iMotor.setDirection(DcMotor.Direction.REVERSE);
+
+        //set zero power behaviour
+        RFM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LFM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RBM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LBM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        SlideRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        SlideLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        RFM.setPower(0);
+        RBM.setPower(0);
+        LFM.setPower(0);
+        LBM.setPower(0);
+
+
+        // encoder setup
+        LFM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LBM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RFM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RBM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        SlideRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        SlideLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+
+        LFM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        LBM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RFM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RBM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        SlideLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        SlideRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
 
