@@ -11,22 +11,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 @TeleOp(name = "Omni Wheel Encoder Test", group = "Test")
 public class Encoders extends LinearOpMode {
 
-    private DcMotor leftLinearSlide;
-    private DcMotor rightLinearSlide;
+    private DcMotor axial;
+    private DcMotor lateral;
 
     @Override
     public void runOpMode() {
 
         // Initialize the hardware variables
-        leftLinearSlide = hardwareMap.get(DcMotor.class, "leftLinearSlide");
-        rightLinearSlide = hardwareMap.get(DcMotor.class, "rightLinearSlide");
+        axial = hardwareMap.get(DcMotor.class, "axial");
+        lateral = hardwareMap.get(DcMotor.class, "lateral");
 
         // Set motors to run using encoders
-        leftLinearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightLinearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        axial.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lateral.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftLinearSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightLinearSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        axial.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lateral.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
         // Wait for the IMU to calibrate
@@ -41,8 +41,8 @@ public class Encoders extends LinearOpMode {
         // Main loop: Keep running while the OpMode is active
         while (opModeIsActive()) {
             // Read the encoder values
-            int leftLinearSlidePos= leftLinearSlide.getCurrentPosition();
-            int rightLinearSlidePos = rightLinearSlide.getCurrentPosition();
+            int leftLinearSlidePos= axial.getCurrentPosition();
+            int rightLinearSlidePos = lateral.getCurrentPosition();
 
             // Get orientation angles
 

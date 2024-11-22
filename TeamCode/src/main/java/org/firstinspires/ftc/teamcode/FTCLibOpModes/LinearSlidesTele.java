@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.FTClibSubsystems.LinearSlides;
 
 
 @Autonomous(name = "LinearSlides Test", group = "Test")
-public class LinearSlidesTele extends LinearOpMode {
+public class  LinearSlidesTele extends LinearOpMode {
     private LinearSlides linearSlides;
 
     @Override
