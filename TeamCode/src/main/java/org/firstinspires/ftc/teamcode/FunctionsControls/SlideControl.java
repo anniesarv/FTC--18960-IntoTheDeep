@@ -1,5 +1,5 @@
 
-package org.firstinspires.ftc.teamcode.FTClibSubsystems;
+package org.firstinspires.ftc.teamcode.FunctionsControls;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -13,8 +13,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Config
 @TeleOp
-public class PidControllers extends OpMode {
-    private PIDController controller;
+public class SlideControl extends OpMode {
+    private PIDController slideController;
 
     public static double p = 0.001, i = 0, d =0.00001 ;
     public static double kg = 0.1; // gravity compensation
@@ -27,7 +27,7 @@ public class PidControllers extends OpMode {
 
     @Override
     public void init() {
-        controller = new PIDController(p, i, d);
+        slideController = new PIDController(p, i, d);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         leftLinearSlide = hardwareMap.get(DcMotorEx.class, "leftLinearSlide");
@@ -50,7 +50,7 @@ public class PidControllers extends OpMode {
 
     @Override
     public void loop() {
-        controller.setPID(p, i, d); // Update PID values from dashboard
+        slideController.setPID(p, i, d); // Update PID values from dashboard
 
         int leftSlidePos = leftLinearSlide.getCurrentPosition(); // Negate for correct direction
         int rightSlidePos = -rightLinearSlide.getCurrentPosition();
@@ -69,7 +69,7 @@ public class PidControllers extends OpMode {
         target = Math.max(0, Math.min(target, 60000));
 
         // PID output
-        double pid = controller.calculate(slidesPos, target);
+        double pid = slideController.calculate(slidesPos, target);
 
         // gravity compensation + PID correction
         double power = pid + kg;

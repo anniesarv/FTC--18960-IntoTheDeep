@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.FTClibSubsystems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import org.firstinspires.ftc.teamcode.FTClibSubsystems.XDriveSubsystem;
+import org.firstinspires.ftc.teamcode.FunctionsControls.XDriveSubsystem;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "X-Drive TeleOp")
 public class XDriveTeleOp extends LinearOpMode {
