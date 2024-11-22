@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.functions.SimplifiedOdometryRobot;
  * The IMU gyro is used to stabilize the heading when the operator is not requesting a turn.
  */
 
-@TeleOp(name="Sample TeleOp", group = "Mr. Phil")
+@TeleOp
 public class SampleTeleOp extends LinearOpMode
 {
     final double SAFE_DRIVE_SPEED   = 0.8 ; // Adjust this to your robot and your driver.  Slower usually means more accuracy.  Max value = 1.0

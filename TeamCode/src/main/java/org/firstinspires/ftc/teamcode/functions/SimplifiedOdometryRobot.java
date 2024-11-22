@@ -50,7 +50,6 @@ public class SimplifiedOdometryRobot {
     public ProportionalControl driveController     = new ProportionalControl(DRIVE_GAIN, DRIVE_ACCEL, DRIVE_MAX_AUTO, DRIVE_TOLERANCE, DRIVE_DEADBAND, false);
     public ProportionalControl strafeController    = new ProportionalControl(STRAFE_GAIN, STRAFE_ACCEL, STRAFE_MAX_AUTO, STRAFE_TOLERANCE, STRAFE_DEADBAND, false);
     public ProportionalControl yawController       = new ProportionalControl(YAW_GAIN, YAW_ACCEL, YAW_MAX_AUTO, YAW_TOLERANCE,YAW_DEADBAND, true);
-    public ProportionalControl linearSlideController = new ProportionalControl(0.1, 50, 0.5, 1.0, 0.2, false);
 
     // ---  Private Members
 
@@ -59,9 +58,6 @@ public class SimplifiedOdometryRobot {
     private DcMotor rightFrontDrive;    //  control the right front drive wheel
     private DcMotor leftBackDrive;      //  control the left back drive wheel
     private DcMotor rightBackDrive;     //  control the right back drive wheel
-
-    private DcMotor leftLinearSlide;     // control the left linear slide
-    private DcMotor rightLinearSlide;    // control right linear slide
 
     private DcMotor driveEncoder;       //  the Axial (front/back) Odometry Module (may overlap with motor, or may not)
     private DcMotor strafeEncoder;      //  the Lateral (left/right) Odometry Module (may overlap with motor, or may not)
@@ -104,21 +100,8 @@ public class SimplifiedOdometryRobot {
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
 
 
-        //setup linear slide motors
 
-        leftLinearSlide = myOpMode.hardwareMap.get(DcMotor.class, "leftLinearSlide");
-        rightLinearSlide = myOpMode.hardwareMap.get(DcMotor.class, "rightLinearSlide");
 
-        leftLinearSlide.setDirection(DcMotor.Direction.FORWARD);
-        rightLinearSlide.setDirection(DcMotor.Direction.FORWARD);
-
-        leftLinearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftLinearSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftLinearSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        rightLinearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightLinearSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightLinearSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         /**
          * Move the linear slides to a desired position
@@ -359,41 +342,7 @@ public class SimplifiedOdometryRobot {
         heading = 0;
     }
 
-    public void moveLinearSlides(double distanceInches, double power, double holdTime) {
-        resetOdometry();  // Reset odometry before moving slides
 
-        // Reset linear slide controller
-        linearSlideController.reset(distanceInches, power);
-
-        holdTimer.reset();
-
-        while (myOpMode.opModeIsActive() && readSensors()) {
-            // Get the average height of the two linear slides based on their encoder values
-            double averageHeight = (leftLinearSlide.getCurrentPosition() + rightLinearSlide.getCurrentPosition()) / 2.0;
-
-            // Calculate the required power for the slides to move towards the target position
-            double slidePower = linearSlideController.getOutput(averageHeight);
-
-            // Apply the calculated power to both slides
-            leftLinearSlide.setPower(slidePower);
-            rightLinearSlide.setPower(slidePower);
-
-            // Time to exit?
-            if (linearSlideController.inPosition()) {
-                if (holdTimer.time() > holdTime) {
-                    break;  // Exit loop if in position and hold time has passed
-                }
-            } else {
-                holdTimer.reset();  // Reset timer if position is not yet reached
-            }
-
-            myOpMode.sleep(10);
-        }
-
-        // Stop the linear slides after the move
-        leftLinearSlide.setPower(0);
-        rightLinearSlide.setPower(0);
-    }
 
 
 
