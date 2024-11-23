@@ -1,14 +1,26 @@
-package org.firstinspires.ftc.teamcode.FTClibSubsystems;
+package org.firstinspires.ftc.teamcode.functions;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import org.firstinspires.ftc.teamcode.FunctionsControls.XDriveSubsystem;
+import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+@Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "X-Drive TeleOp")
 public class XDriveTeleOp extends LinearOpMode {
 
+
+    private PIDController controller;
+
+    private final double ticks_in_inches = 66275 / 52.0; // Full extension ticks per inch
+
+    private DcMotorEx leftLinearSlide;
+    private DcMotorEx rightLinearSlide;
+
     @Override
     public void runOpMode() {
+
         // Initialize motors
         MotorEx frontLeft = new MotorEx(hardwareMap, "Left Front");
         MotorEx frontRight = new MotorEx(hardwareMap, "Right Front");

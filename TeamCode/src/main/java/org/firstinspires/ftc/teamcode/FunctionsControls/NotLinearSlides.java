@@ -1,4 +1,3 @@
-
 package org.firstinspires.ftc.teamcode.FunctionsControls;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -10,12 +9,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
 
 @Config
 @TeleOp
-public class LinearSlides extends OpMode {
+public class NotLinearSlides extends OpMode {
     private PIDController controller;
 
     public static double p = 0.001, i = 0, d =0.00001 ;
@@ -65,10 +62,10 @@ public class LinearSlides extends OpMode {
         int slidesPos = (leftSlidePos );//+ rightSlidePos) / 2;
 
         //dpad input i hope it works
-        if (gamepad1.dpad_up) {
+        if (gamepad2.dpad_up) {
             target += 250;
         }
-        else if (gamepad1.dpad_down) {
+        else if (gamepad2.dpad_down) {
             target -= 250;
         }
 

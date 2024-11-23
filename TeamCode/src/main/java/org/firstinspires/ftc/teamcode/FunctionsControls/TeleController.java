@@ -5,12 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.CRServo;
 
-import org.firstinspires.ftc.teamcode.FunctionsControls.ServoSubsystem;
-import org.firstinspires.ftc.teamcode.FunctionsControls.SlideSubsystem;
-import org.firstinspires.ftc.teamcode.FunctionsControls.TELEPIDCOLLAB;
+import org.firstinspires.ftc.teamcode.functions.TELEPIDCOLLAB;
 
 
 @TeleOp
@@ -48,9 +45,10 @@ public class TeleController extends OpMode {
         // Linear slide controls
         linearSlideSubsystem.controlSlides();
 
-        if (gamepad2.dpad_up) {
+        if (gamepad1.right_bumper) {
             linearSlideSubsystem.setTarget(3150);
         }
+
 
         // Actuator controls
         if (gamepad2.dpad_left) {

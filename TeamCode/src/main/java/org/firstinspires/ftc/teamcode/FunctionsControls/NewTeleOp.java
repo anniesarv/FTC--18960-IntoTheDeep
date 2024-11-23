@@ -1,50 +1,69 @@
 
 package org.firstinspires.ftc.teamcode.FunctionsControls;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 
-@Config
-@TeleOp
-public class TELEPIDCOLLAB extends OpMode {
-    private PIDController controller;
-    private DcMotorEx Actuator;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.controller.PIDController;
 
+
+
+import com.qualcomm.robotcore.hardware.Servo;
+
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+
+
+@TeleOp
+public class NewTeleOp extends OpMode {
+    //private SlideSubsystem linearSlideSubsystem;
+    private DcMotorEx actuator;
+    private CRServo  oCRServoLeft, oCRServoRight;
+    private DcMotorEx leftLinearSlide;
+    private DcMotorEx rightLinearSlide;
+    private Servo iServoLeft, iServoRight;
+    private CRServo iCRServoLeft, iCRServoRight;
+
+    private ElapsedTime timer = new ElapsedTime();
+    private boolean isSequenceActive = false;
+    private int sequenceStep = 0;
+
+    private PIDController controller;
     public static double p = 0.001, i = 0, d =0.00001 ;
     public static double kg = 0.1; // gravity compensation
     public static int target = 1000; // target position in encoder ticks
 
-    private final double ticks_in_inches = 66275 / 52.0; // Full extension ticks per inch
-
-    private DcMotorEx leftLinearSlide;
-    private DcMotorEx rightLinearSlide;
-    private Servo iServoLeft;
-    private Servo iServoRight;
-    private CRServo iCRServoLeft;
-    private CRServo iCRServoRight;
-    private CRServo oCRServoRight;
-    private CRServo oCRServoLeft;
 
     @Override
+
     public void init() {
+        // Initialize the SlideSubsystem with necessary parameters
+
+        //linearSlideSubsystem = new SlideSubsystem(hardwareMap, 0.001, 0, 0.00001);
+
+
+        // Initialize the ServoSubsystem
+
+        // Initialize the actuator and servos
+        actuator = hardwareMap.get(DcMotorEx.class, "axial");
+        oCRServoLeft = hardwareMap.get(CRServo.class, "oCRServoLeft");
+        oCRServoRight = hardwareMap.get(CRServo.class, "oCRServoRight");
+
+        // Additional setup for motors/servos if needed
+        actuator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //linearSlideSubsystem.setTarget(0);
         controller = new PIDController(p, i, d);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         leftLinearSlide = hardwareMap.get(DcMotorEx.class, "leftLinearSlide");
         rightLinearSlide = hardwareMap.get(DcMotorEx.class, "rightLinearSlide");
-        Actuator = hardwareMap.get(DcMotorEx.class, "axial");
 
-        Actuator.setDirection(DcMotorSimple.Direction.FORWARD);
-        Actuator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
         leftLinearSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -68,57 +87,68 @@ public class TELEPIDCOLLAB extends OpMode {
         oCRServoRight = hardwareMap.get(CRServo.class, "oCRServoRight");
 
 
+
     }
 
-    @Override
     public void loop() {
-        controller.setPID(p, i, d); // Update PID values from dashboard
 
-        //slides
+        //LINEAR SLIDES
+        controller.setPID(p, i, d); // Update PID values from dashboard
         int leftSlidePos = leftLinearSlide.getCurrentPosition(); // Negate for correct direction
         int rightSlidePos = -rightLinearSlide.getCurrentPosition();
-
-        // Average slide positions
         int slidesPos = (leftSlidePos );//+ rightSlidePos) / 2;
 
-        //dpad input i hope it works
+        //FOR DRIVE CONTROLLER
+        //target on amanda controller for intake
+        if (gamepad1.right_bumper) {
+            target = 3150;
+        }
+
+        //linear slide movement
         if (gamepad1.dpad_up) {
             target += 250;
         }
         else if (gamepad1.dpad_down) {
             target -= 250;
         }
+        target = Math.max(2500, Math.min(target, 65000));
+        double pid = controller.calculate(slidesPos, target);
+        double power = pid + kg;
+        leftLinearSlide.setPower(power);
+        rightLinearSlide.setPower(power);
 
 
 
-        //intake wrist
-        if (gamepad1.right_bumper) {
-            iServoLeft.setPosition(0); //0  is down
-            iServoRight.setPosition(1); // 1 down
-        } else if (gamepad1.left_bumper) {
-            iServoLeft.setPosition(1); // 1 is up
-            iServoRight.setPosition(0); // 0 is up
+        //FOR FUNCTIONS CONTROLLER
+
+        //linear actuator
+        if (gamepad2.dpad_left) {
+            actuator.setPower(1.0); // Extend
+        } else if (gamepad2.dpad_right) {
+            actuator.setPower(-1.0); // Retract
+        } else {
+            actuator.setPower(0); // Stop
         }
 
-        // intake cr servos
-        if (gamepad1.x) {
-            iCRServoLeft.setPower(1.0); // Run forward
-            iCRServoRight.setPower(-1.0);
-        } else if (gamepad1.y) {
-            iCRServoLeft.setPower(-1.0); // Run backward
-            iCRServoRight.setPower(1.0);
+        //intake servos
 
+
+        if (gamepad2.x) {
+            iCRServoLeft.setPower(1.0);
+            iCRServoRight.setPower(-1.0);
+        } else if (gamepad2.y) {
+            iCRServoLeft.setPower(-1.0);
+            iCRServoRight.setPower(1.0);
         } else {
             iCRServoLeft.setPower(0);
-            iCRServoRight.setPower(0);// Stop
+            iCRServoRight.setPower(0);
         }
 
-
-        //outtale servos
-        if (gamepad1.a) {
+        //outtake servos
+        if (gamepad2.a) {
             oCRServoLeft.setPower(1);
             oCRServoRight.setPower(-1);
-        } else if (gamepad1.b) {
+        } else if (gamepad2.b) {
             oCRServoLeft.setPower(-1);
             oCRServoRight.setPower(1);
         } else {
@@ -126,31 +156,22 @@ public class TELEPIDCOLLAB extends OpMode {
             oCRServoRight.setPower(0);
         }
 
-
-        if (gamepad1.dpad_left) {
-            Actuator.setPower(1.0); // Extend
-        } else if (gamepad1.dpad_right) {
-            Actuator.setPower(-1.0); // Retract
-        } else {
-            Actuator.setPower(0); // Stop
+        //intake servo WRIST
+        if (gamepad2.right_bumper) {
+            iServoLeft.setPosition(0.12);
+            iServoRight.setPosition(0.8);
+        } else if (gamepad2.left_bumper) {
+            iServoLeft.setPosition(1);
+            iServoRight.setPosition(0);
         }
 
 
 
-
-        target = Math.max(2500, Math.min(target, 65000));
-
-        // PID output
-        double pid = controller.calculate(slidesPos, target);
-
-        // gravity compensation + PID correction
-        double power = pid + kg;
-
-        // Apply power to both slides (consider reversed direction for one motor)
-        leftLinearSlide.setPower(power);
-        rightLinearSlide.setPower(power);
-
-        // telemetry for debugging
+        // Telemetry for debugging
+        // telemetry.addData("Slide Target", linearSlideSubsystem.getTarget());
+        telemetry.addData("oCRServoLeft Power", oCRServoLeft.getPower());
+        telemetry.addData("oCRServoRight Power", oCRServoRight.getPower());
+        telemetry.update();
         telemetry.addData("Left Slide Position", leftSlidePos);
         telemetry.addData("Right Slide Position", rightSlidePos);
         telemetry.addData("Target Position", target);
@@ -159,4 +180,8 @@ public class TELEPIDCOLLAB extends OpMode {
         telemetry.addData("Motor Power", power);
         telemetry.update();
     }
+
+
 }
+
+

@@ -1,7 +1,9 @@
-package org.firstinspires.ftc.teamcode.functions;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 
 
 @Autonomous
@@ -10,11 +12,15 @@ public class SampleAuto extends LinearOpMode
 {
     // get an instance of the "Robot" class.
     private SimplifiedOdometryRobot robot = new SimplifiedOdometryRobot(this);
+    private AutoSlideSubsystem autoSlideSubsystem;
+
 
     @Override public void runOpMode()
     {
         // Initialize the robot hardware & Turn on telemetry
         robot.initialize(true);
+        autoSlideSubsystem = new AutoSlideSubsystem(hardwareMap, new MultipleTelemetry(telemetry));
+
 
         // Wait for driver to press start
         telemetry.addData(">", "Touch Play to run Auto");
@@ -26,29 +32,26 @@ public class SampleAuto extends LinearOpMode
         // Run Auto if stop was not pressed.
         if (opModeIsActive())
         {
-            // Note, this example takes more than 30 seconds to execute, so turn OFF the auto timer.
 
-            // Drive a large rectangle, turning at each corner
-            //robot.strafe(  24, 0.60, 1);
-             robot.turnTo(180, 0.45, 1);
-            //robot.drive(24, 0.6, 1);
+            robot.strafe(  24, 0.60, 1);
+            sleep(500);
+            autoSlideSubsystem.setTarget(15000);
 
-            //robot.drive(  72, 0.60, 0.25);
-            //robot.turnTo(180, 0.45, 0.5);
-            //robot.drive(  84, 0.60, 0.25);
-           //robot.turnTo(270, 0.45, 0.5);
-          //  robot.drive(  72, 0.60, 0.25);
-          //  robot.turnTo(0, 0.45, 0.5);
+            //robot.turnTo(180, 0.45, 1);
+            robot.drive(24, 0.6, 1);
+
+            while (opModeIsActive()) {
+                autoSlideSubsystem.update();
+                telemetry.addLine("Running...");
+                telemetry.update();
+            }
+
+
 
 
 
             sleep(500);
 
-            // Drive the path again without turning.
-           //robot.drive(  24, 0.60, 0.15);
-           // robot.strafe( 72, 0.60, 0.15);
-           // robot.drive( -84, 0.60, 0.15);
-           // robot.strafe(-72, 0.60, 0.15);
             robot.stopRobot();
 
         }

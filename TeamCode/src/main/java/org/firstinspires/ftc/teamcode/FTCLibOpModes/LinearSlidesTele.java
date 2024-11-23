@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode.FTCLibOpModes;
+/*package org.firstinspires.ftc.teamcode.FTCLibOpModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode; // Use LinearOpMode directly
-import org.firstinspires.ftc.teamcode.FTClibSubsystems.LinearSlides;
+import org.firstinspires.ftc.teamcode.FunctionsControls.LinearSlides;
 
 
 
@@ -58,3 +58,4 @@ public class LinearSlidesTeleOp extends LinearOpMode {
 }
 
  */
+

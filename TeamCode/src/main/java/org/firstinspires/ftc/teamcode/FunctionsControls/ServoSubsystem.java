@@ -87,7 +87,7 @@ public class ServoSubsystem {
                 isTransferStarted = false;
             }
         } else {
-            // Stop CR servos and reset the state if dpaddown is released
+            // Stop CR servos and reset the state if dpaddown isreleased
             oCRServoLeft.setPower(0);
             oCRServoRight.setPower(0);
             isTransferStarted = false;
@@ -100,9 +100,8 @@ public class ServoSubsystem {
             // Start running CR servos
             iServoLeft.setPosition(1);
             iServoRight.setPosition(0);
-
-
         }
-
     }
+
+
 }

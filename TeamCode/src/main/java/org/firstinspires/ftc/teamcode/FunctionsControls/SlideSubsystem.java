@@ -8,17 +8,16 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
 
 public class SlideSubsystem {
     private DcMotorEx leftLinearSlide, rightLinearSlide;
     private PIDController controller;
     private static final double KG = 0.1; // Gravity compensation
-    private int target = 1000;
+    public static double p = 0.001, i = 0, d = 0.00001;
+    private final double ticks_in_inches = 66275 / 52.0; // Full extension ticks per inch
+
+    public int target = 0;  // Initial target position
 
     public SlideSubsystem(HardwareMap hardwareMap, double p, double i, double d) {
         leftLinearSlide = hardwareMap.get(DcMotorEx.class, "leftLinearSlide");
@@ -37,6 +36,7 @@ public class SlideSubsystem {
         rightLinearSlide.setDirection(DcMotorEx.Direction.FORWARD);
 
         controller = new PIDController(p, i, d);
+
     }
 
     public void updatePID(double p, double i, double d) {
@@ -47,14 +47,22 @@ public class SlideSubsystem {
         this.target = Math.max(0, Math.min(target, 65000)); // Clamp target to valid range
     }
 
+    // New method to control slides using dpad buttons
+    public void controlWithDpad(boolean dpadUp, boolean dpadDown) {
+        // Adjust the target based on dpad input
+        if (dpadUp) {
+            setTarget(target + 1000);  // Increase target by 1000 (or any value you prefer)
+        } else if (dpadDown) {
+            setTarget(target - 1000);  // Decrease target by 1000 (or any value you prefer)
+        }
 
+    }
 
-
-
+    // Updated controlSlides method to use the target
     public void controlSlides() {
         int leftSlidePos = leftLinearSlide.getCurrentPosition();
         int rightSlidePos = rightLinearSlide.getCurrentPosition();
-        int slidesPos = leftSlidePos + rightSlidePos; // Average or adjust if necessary
+        int slidesPos = (leftSlidePos + rightSlidePos) / 2; // Average position
 
         double pid = controller.calculate(slidesPos, target);
         double power = pid + KG;
@@ -67,6 +75,3 @@ public class SlideSubsystem {
         return target;
     }
 }
-
-
-

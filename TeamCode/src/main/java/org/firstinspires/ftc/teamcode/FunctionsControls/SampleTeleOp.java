@@ -1,6 +1,6 @@
 
 
-package org.firstinspires.ftc.teamcode.TeleOp;
+package org.firstinspires.ftc.teamcode.FunctionsControls;
 
 
 
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.functions.SimplifiedOdometryRobot;
+import org.firstinspires.ftc.teamcode.Autonomous.SimplifiedOdometryRobot;
 
 
 /*
