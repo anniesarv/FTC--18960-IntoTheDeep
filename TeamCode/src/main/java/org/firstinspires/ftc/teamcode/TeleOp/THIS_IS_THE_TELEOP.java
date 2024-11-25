@@ -14,7 +14,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Combined TeleOp")
+@TeleOp(name = "THIS_IS_THE_TELEOP")
 public class THIS_IS_THE_TELEOP extends OpMode {
 
     // Subsystems and hardware components
@@ -86,6 +86,9 @@ public class THIS_IS_THE_TELEOP extends OpMode {
         double turn = gamepad1.right_stick_x;
         mecanumDrive.driveRobotCentric(strafe, forward, turn);
 
+        turn = Math.max(-0.5, Math.min(0.5, turn));
+
+
         // Linear slides control (gamepad1)
         controller.setPID(p, i, d);
         int leftSlidePos = leftLinearSlide.getCurrentPosition();
@@ -95,7 +98,19 @@ public class THIS_IS_THE_TELEOP extends OpMode {
         if (gamepad1.right_bumper) target = 3150;
         if (gamepad1.dpad_up) target += 250;
         else if (gamepad1.dpad_down) target -= 250;
-        target = Math.max(2500, Math.min(target, 65000));
+        target = Math.max(-10000, Math.min(target, 67000));
+
+        if (gamepad1.x) {
+            leftLinearSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            rightLinearSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            leftLinearSlide.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            rightLinearSlide.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            target = 0; // Reset target to match the new encoder state
+        }
+        if (gamepad1.b) {
+            target = 2675;
+        }
+
 
         double pid = controller.calculate(slidesPos, target);
         double power = pid + kg;
@@ -133,8 +148,8 @@ public class THIS_IS_THE_TELEOP extends OpMode {
 
         // Intake servo wrist control (gamepad2)
         if (gamepad2.right_bumper) {
-            iServoLeft.setPosition(0.12);
-            iServoRight.setPosition(0.8);
+            iServoLeft.setPosition(0.16);
+            iServoRight.setPosition(0.84);
         } else if (gamepad2.left_bumper) {
             iServoLeft.setPosition(1);
             iServoRight.setPosition(0);
